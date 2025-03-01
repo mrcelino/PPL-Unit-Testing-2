@@ -1,8 +1,29 @@
 import org.example.Kalkulator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 public class KalkulatorTest {
+
+    @BeforeAll
+    static void setup(){
+        System.out.println("Before All");
+    }
+
+    @BeforeEach
+    void setupMethod(){
+        System.out.println("Before Each");
+    }
+
+    @AfterAll
+    static void afterAll(){
+        System.out.println("After All");
+    }
+
+    @AfterEach
+    void afterEach(){
+        System.out.println("After Each");
+    }
+
+
     @Test
     void testTambah() {
         int a = 10;
