@@ -36,7 +36,6 @@ public class Wallet {
         return cards.remove(card);
     }
 
-
     public boolean addMoney(int amount) {
         if (ALLOWED_MONEY.contains(amount)) {
             money.add(amount);
@@ -74,6 +73,22 @@ public class Wallet {
         for (int m : money) {
             total += m;
         }
+        for (int c : coins) {
+            total += c;
+        }
+        return total;
+    }
+
+    public int calculateMoney() {
+        int total = 0;
+        for (int m : money) {
+            total += m;
+        }
+        return total;
+    }
+
+    public int calculateCoin() {
+        int total = 0;
         for (int c : coins) {
             total += c;
         }

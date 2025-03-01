@@ -81,11 +81,26 @@ public class WalletTest {
     }
 
     @Test
+    public void testCalculateMoney() {
+        wallet.addMoney(10000);
+        wallet.addMoney(5000);
+        wallet.addCoin(1000); // Koin tidak boleh memengaruhi kalkulasi uang kertas
+        assertEquals(15000, wallet.calculateMoney(), "Total uang kertas harus sesuai");
+    }
+
+    @Test
+    public void testCalculateCoin() {
+        wallet.addCoin(500);
+        wallet.addCoin(1000);
+        wallet.addMoney(10000); // Uang kertas tidak boleh memengaruhi kalkulasi koin
+        assertEquals(1500, wallet.calculateCoin(), "Total koin harus sesuai");
+    }
+
+    @Test
     public void testGetTotalMoney() {
         wallet.addMoney(10000);
         wallet.addMoney(5000);
         wallet.addCoin(1000);
-
         assertEquals(16000, wallet.getTotalMoney(), "Total uang harus sesuai");
     }
 
