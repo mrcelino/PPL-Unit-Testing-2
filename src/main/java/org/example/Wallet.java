@@ -36,17 +36,19 @@ public class Wallet {
         return cards.remove(card);
     }
 
-    public boolean addMoney(int amount, boolean isMoney) {
-        if (isMoney) {
-            if (ALLOWED_MONEY.contains(amount)) {
-                money.add(amount);
-                return true;
-            }
-        } else {
-            if (ALLOWED_COINS.contains(amount)) {
-                coins.add(amount);
-                return true;
-            }
+
+    public boolean addMoney(int amount) {
+        if (ALLOWED_MONEY.contains(amount)) {
+            money.add(amount);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addCoin(int amount) {
+        if (ALLOWED_COINS.contains(amount)) {
+            coins.add(amount);
+            return true;
         }
         return false;
     }
@@ -55,7 +57,12 @@ public class Wallet {
         if (money.contains(amount)) {
             money.remove((Integer) amount);
             return true;
-        } else if (coins.contains(amount)) {
+        }
+        return false;
+    }
+
+    public boolean withdrawCoin(int amount) {
+        if (coins.contains(amount)) {
             coins.remove((Integer) amount);
             return true;
         }

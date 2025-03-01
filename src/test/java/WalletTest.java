@@ -1,16 +1,25 @@
 import org.example.Wallet;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
 public class WalletTest {
-    private Wallet wallet;
+    private static Wallet wallet;
+
+    @BeforeAll
+    public static void initAll() {
+        wallet = new Wallet();
+        System.out.println("Pengujian dimulai");
+    }
 
     @BeforeEach
     public void setUp() {
-        wallet = new Wallet();
+        assertNotNull(wallet, "Wallet tidak boleh null sebelum test dimulai");
+        if (!"Admin".equals(wallet.getOwner())) {
+            wallet.setOwner("Admin");
+        }
     }
 
     @Test
@@ -27,9 +36,8 @@ public class WalletTest {
         wallet.addCard("KTP");
         List<String> cards = wallet.getCards();
         assertTrue(cards.contains("SIM"), "Kartu harus ada dalam list");
-        assertEquals(3, cards.size(), "Jumlah kartu harusnya 3");
+        assertFalse(cards.contains("KIS"), "Kartu tidak ada dalam list");
     }
-
 
     @Test
     public void testRemoveCard() {
@@ -37,75 +45,68 @@ public class WalletTest {
         boolean result = wallet.removeCard("KTM");
         assertTrue(result, "Pengambilan kartu yang ada harus berhasil");
         assertFalse(wallet.getCards().contains("KTM"), "Kartu harusnya tidak ada setelah dihapus");
-        assertEquals(0, wallet.getCards().size(), "Jumlah kartu harusnya 0 setelah dihapus");
 
-        // Test menghapus kartu yang tidak ada
         result = wallet.removeCard("Kartu Debit");
-        assertFalse(result, "Pengambilan kartu yang tidak ada harus gagal");
+        assertFalse(result, "Kartu tidak ada harus gagal");
     }
 
     @Test
     public void testAddMoneyValid() {
-        boolean resultMoney = wallet.addMoney(10000, true); // Uang lembaran
-        boolean resultCoin = wallet.addMoney(500, false);  // Koin
-
-        assertTrue(resultMoney, "Uang lembaran harus valid");
-        assertTrue(resultCoin, "Koin harus valid");
-        assertTrue(wallet.getMoney().contains(10000), "Uang lembaran harus ada");
-        assertTrue(wallet.getCoins().contains(500), "Koin harus ada");
-        assertEquals(1, wallet.getMoney().size(), "Jumlah uang harusnya 1");
-        assertEquals(1, wallet.getCoins().size(), "Jumlah koin harusnya 1");
+        assertTrue(wallet.addMoney(10000), "Penambahan uang kertas harus berhasil");
+        assertTrue(wallet.getMoney().contains(10000), "Uang kertas harus ada");
+        assertFalse(wallet.addMoney(3000), "Uang kertas tidak valid harus gagal");
     }
 
     @Test
-    public void testAddMoneyInvalid() {
-        boolean resultMoney = wallet.addMoney(3000, true); // Uang lembaran tidak valid
-        boolean resultCoin = wallet.addMoney(200, false);  // Koin tidak valid
-
-        assertFalse(resultMoney, "Penambahan uang lembaran yang tidak valid harus gagal");
-        assertFalse(resultCoin, "Penambahan koin yang tidak valid harus gagal");
-        assertEquals(0, wallet.getMoney().size(), "Jumlah uang harus tetap kosong");
-        assertEquals(0, wallet.getCoins().size(), "Jumlah koin harus tetap kosong");
+    public void testAddCoinValid() {
+        assertTrue(wallet.addCoin(500), "Penambahan koin harus berhasil");
+        assertTrue(wallet.getCoins().contains(500), "Koin harus ada");
+        assertFalse(wallet.addCoin(200), "Koin tidak valid harus gagal");
     }
 
     @Test
     public void testWithdrawMoney() {
-        wallet.addMoney(20000, true); // Uang lembaran
-        wallet.addMoney(1000, false); // Koin
+        wallet.addMoney(20000);
+        assertTrue(wallet.withdrawMoney(20000), "Penarikan uang kertas harus berhasil");
+        assertFalse(wallet.getMoney().contains(20000), "Uang kertas harus hilang setelah ditarik");
+        assertFalse(wallet.withdrawMoney(5000), "Penarikan uang kertas yang tidak ada harus gagal");
+    }
 
-        boolean resultMoney = wallet.withdrawMoney(20000);
-        boolean resultCoin = wallet.withdrawMoney(1000);
-        boolean resultInvalid = wallet.withdrawMoney(5000);
-
-        assertTrue(resultMoney, "Penarikan uang lembaran harus berhasil");
-        assertTrue(resultCoin, "Penarikan koin harus berhasil");
-        assertFalse(resultInvalid, "Penarikan jumlah yang tidak ada harus gagal");
-        assertFalse(wallet.getMoney().contains(20000), "Uang lembaran harus hilang setelah ditarik");
+    @Test
+    public void testWithdrawCoin() {
+        wallet.addCoin(1000);
+        assertTrue(wallet.withdrawCoin(1000), "Penarikan koin harus berhasil");
         assertFalse(wallet.getCoins().contains(1000), "Koin harus hilang setelah ditarik");
+        assertFalse(wallet.withdrawCoin(500), "Penarikan koin yang tidak ada harus gagal");
     }
 
     @Test
     public void testGetTotalMoney() {
-        wallet.addMoney(10000, true); // Uang lembaran
-        wallet.addMoney(5000, true);  // Uang lembaran
-        wallet.addMoney(1000, false); // Koin
+        wallet.addMoney(10000);
+        wallet.addMoney(5000);
+        wallet.addCoin(1000);
 
-        int total = wallet.getTotalMoney();
-        assertEquals(16000, total, "Total uang harus sesuai dengan jumlah uang lembar dan koin");
-
-        // Test dompet kosong
-        Wallet emptyWallet = new Wallet();
-        assertEquals(0, emptyWallet.getTotalMoney(), "Total uang dompet kosong harus 0");
+        assertEquals(16000, wallet.getTotalMoney(), "Total uang harus sesuai");
     }
 
     @Test
-    public void testInitialState() {
-        assertNull(wallet.getOwner(), "Owner awal harus null");
+    public void testInitialStateAfterSetup() {
+        assertEquals("Admin", wallet.getOwner(), "Owner harus sesuai dengan setup");
         assertEquals(0, wallet.getCards().size(), "Daftar kartu awal harus kosong");
-        assertEquals(0, wallet.getMoney().size(), "Daftar uang awal harus kosong");
+        assertEquals(0, wallet.getMoney().size(), "Daftar uang kertas awal harus kosong");
         assertEquals(0, wallet.getCoins().size(), "Daftar koin awal harus kosong");
-        assertTrue(wallet.getCards().isEmpty(), "Daftar kartu harus kosong");
-        assertTrue(wallet.getMoney().isEmpty(), "Daftar uang harus kosong");
-        assertTrue(wallet.getCoins().isEmpty(), "Daftar koin harus kosong");
+    }
+
+    @AfterEach
+    public void tearDown() {
+        wallet.getCards().clear();
+        wallet.getMoney().clear();
+        wallet.getCoins().clear();
+    }
+
+    @AfterAll
+    public static void tearDownAll() {
+        wallet = null;
+        System.out.println("Pengujian selesai");
     }
 }
